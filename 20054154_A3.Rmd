@@ -1,0 +1,68 @@
+# Project Info
+## Date: January 29, 2021
+## GitHub: https://github.com/kaileemorrison/special-goggles
+
+#### Load Dataset 
+```{r}
+Fallo <- read.csv("./InputData/FallopiaData.csv",header=TRUE) # loads dataset
+head(Fallo) # shows first 6 rows of dataset 
+```
+#### Remove rows with 'Total' biomass < 60
+```{r}
+library(dplyr) # loads dplyr package
+
+Fallo1 <- subset(Fallo,Total>60) # subsets the data by values of 'Total' biomass that are greater than 60, therefore removing any values less than (<) 60. 
+```
+### Reorder the columns so that they are in the order: ‘Total’, ‘Taxon’, ‘Scenario’, ‘Nutrients’, and remove the other columns
+```{r}
+X <- select(Fallo,Total,Taxon,Scenario,Nutrients)
+head(X)
+```
+#### Make a new column TotalG, which converts the ‘Total’ column from mg to grams AND replace Total with TotalG, and add it to the dataset
+```{r}
+TotalG <- X$Total/1000 # converts mg to g since there is 1000 mg in a g
+
+TotalG # prints out new TotalG object to confirm correct conversion of mg to g
+names(X) # prints names to ensure spelling and order in next step 
+
+X <-  transmute(X, TotalG = Total/1000, Taxon, Scenario, Nutrients) # replaces 'Total' with 'TotalG' and keeps other columns
+head(X) # prints the first 6 rows of new X object
+```
+
+#### Write a custom function that will take two inputs from the user: 1. a vector of data to process (e.g. column from a data.frame object) and 2. a string that defines what calculation to perform. if string #2 is "Average" then calculate the average value for the column named in vector #1, if string #2 is "Sum" then calculate the sum of values for the column named in vector #1, if string #2 is "Observations" then count the number of observed values for the column named in vector #1, if string #2 is anything else, then output an error to the user. 
+```{r}
+my.function <- function(var1=c(),var2=c("Average","Sum","Observations")){
+  # custom function with two inputs, a column of data defined by var1 and a string of possible calcualtions defined by var2
+  if (var2 == "Average"){
+    print(mean(var1)) # print message containing average of var1
+  }
+  else if (var2 == "Sum"){
+    print(sum(var1)) # print message containing sum of var1
+  }
+  else if (var2 == "Observations"){
+    print(length(var1)) # print message containing total number of observations in var1
+  }
+  else {
+    print("Error: specify var2") # prints error message if no var2 is specified
+  }
+}
+```
+
+#### Write some R code that uses your function to count the total number of observations in the 'Taxon' column.
+```{r}
+my.function(X$Taxon,"Observations") # subsets data to look at just Taxon column, calculates total number of observations in Taxon column
+```
+
+#### Write some R code that uses your function to calculate the average TotalG for each of the two Nutrient concentrations.
+```{r}
+NutrientTotalG <- X %>% group_by(Nutrients) %>% # groups data by Nutrient type (i.e. high and low)
+summarise(NutrientTotalG=my.function(TotalG, "Average")) #calculates the average TotalG for both low and high nutrient concentrations
+```
+
+#### Write (i.e. save) the new data to a file called "WrangledData.csv" in the Output folder. 
+```{r}
+write.csv(X, "./Output/WrangledData.csv") # saves data to "Output" folder in project folder 
+```
+
+
+
