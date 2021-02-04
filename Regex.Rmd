@@ -1,28 +1,39 @@
 ---
-title: "Regex.Rmd"
+title: "Regex"
 output: html_document
 ---
+# Part 1: Data Science Report
+## Date: February 5, 2021
+## GitHub: https://github.com/kaileemorrison/special-goggles
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+1. Import dataset 
+```{r}
+MData <- read.csv("./measurements.csv",header=TRUE) # loads dataset
 ```
 
-## R Markdown
+2. Use a dplyr command and regular expressions to add a new column called Sp that shortens the genus name in the Organism column to only the first letter and period. (i.e. Homo sapies -> H. sapiens)
+```{r}
+library(dplyr) # loads dplyr package
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+X <- MData # define MData as new object 'X'
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+X$Sp <- sub("(\\w)\\w+","\\1.",MData$Organism) # creates new column that shortens genus name to first letter and period
 
-```{r cars}
-summary(cars)
+X <- mutate(MData, Sp=sub("(\\w)\\w+","\\1.",MData$Organism)) # adds new column to the dataset
+
+head(X) # checks that new 'Sp' column has been successfully added
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+3. Use a dplyr command to create a new dataset but with the Sp column instead of the organism column, moved to the beginning in place of the original Organism column. 
+```{r}
+X <- select(X, Sp, Limb.width,Limb.length,Observer) # selects the columns of interest and places 'Sp' at the beginning
+head(X) # confirms selection and arrangement of columns
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+4. Save the dataset as a new file called MeasShort.csv
+```{r}
+write.csv(X,"MeasShort.csv") # saves dataset as a new file
+```
+
